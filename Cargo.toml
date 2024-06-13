@@ -1,0 +1,15 @@
+[package]
+name = "dwrench"
+version = "0.1.0"
+edition = "2021"
+default-run = "dwrench"
+
+[dependencies]
+chrono = "0.4.38"
+clap = { version = "4.0", features = ["derive"] }
+polars = { version = "0.40.0", features = ["lazy", "parquet"] }
+
+[dev-dependencies]
+assert_cmd = "2.0.14"
+polars-core = "0.40.0"
+predicates = "3.1.0"

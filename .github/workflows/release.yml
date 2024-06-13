@@ -1,0 +1,76 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Run ci.sh
+        run: ./ci.sh
+
+  build-ubuntu:
+    needs: [ci]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: build
+        run: cargo build --release
+      - name: zip it
+        run: tar -czf dwrench-linux.zip target/release/dwrench
+      - name: Upload it
+        uses: actions/upload-artifact@v4
+        with:
+          name: dwrench-ubuntu-latest
+          path: |
+            dwrench-linux.zip
+    
+  build-windows:
+    needs: [ci]
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: build
+        run: cargo build --release
+      - name: zip file
+        run: tar -czf dwrench-windows.zip target\release\dwrench.exe
+      - name: Upload it
+        uses: actions/upload-artifact@v4
+        with:
+          name: dwrench-windows-latest
+          path: |
+            dwrench-windows.zip
+  
+  create-release:
+    needs: [build-ubuntu, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download ubuntu artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dwrench-ubuntu-latest
+
+      - name: Download windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dwrench-windows-latest
+
+      - name: Test
+        run: ls -lah
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dwrench-linux.zip
+            dwrench-windows.zip
